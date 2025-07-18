@@ -1,0 +1,160 @@
+/* 在顶部添加 body 样式 */
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8fa;
+  /* 不再用flex居中body */
+}
+
+.app-container {
+  min-height: 100vh;
+  width: 100vw;
+  background: #f7f8fa;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0;
+}
+
+/* 应用整体样式 */
+.app {
+  max-width: 1200px;
+  min-width: 320px;
+  width: 100%;
+  margin: 32px auto 0 auto;
+  background: #1e1c1c;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 32px 40px 40px 40px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 头部样式 */
+.app-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 24px;
+}
+
+.app-nav {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.logout-button {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  background: none;
+  color: #f44336;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.logout-button:hover {
+  color: #b71c1c;
+  background: none;
+}
+
+/* 主内容区样式 */
+.app-content {
+  flex: 1;
+  min-height: 400px;
+}
+
+@media (max-width: 900px) {
+  .app {
+    max-width: 98vw;
+    padding: 16px 4vw;
+  }
+  .app-nav {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+}
+
+/* 登录表单样式 */
+.login-form {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.login-form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.login-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  }
+
+.login-form button:hover {
+  background-color: #45a049;
+  }
+
+.login-form button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #f44336;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  text-align: center;
+  }
+
+/* 仪表盘样式 */
+.dashboard {
+  padding: 20px;
+}
+
+.dashboard h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
