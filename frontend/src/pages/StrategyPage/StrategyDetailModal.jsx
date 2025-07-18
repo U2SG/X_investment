@@ -9,6 +9,7 @@ import SignalEditModal from './SignalEditModal';
 import SignalAddModal from './SignalAddModal';
 import BacktestDetailModal from './BacktestDetailModal';
 import BacktestFormModal from './BacktestFormModal';
+import Modal from '../../components/Modal';
 
 // StrategyDetailModal: 策略详情弹窗，含信号、回测列表及相关弹窗
 export default function StrategyDetailModal({ strategy, onClose }) {
@@ -43,52 +44,50 @@ export default function StrategyDetailModal({ strategy, onClose }) {
   if (!strategy) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>×</button>
-        <h3>策略详情</h3>
-        <div><b>ID:</b> {strategy.id}</div>
-        <div><b>名称:</b> {strategy.name}</div>
-        <div><b>类型:</b> {strategy.strategy_type}</div>
-        <div><b>资产类别:</b> {strategy.asset_class}</div>
-        <div><b>风险等级:</b> {strategy.risk_level}</div>
-        <div><b>预期收益:</b> {strategy.expected_return}</div>
-        <div><b>最大回撤:</b> {strategy.max_drawdown}</div>
-        <div><b>参数:</b> <pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(strategy.parameters, null, 2)}</pre></div>
-        {loading && <div>加载中...</div>}
-        {error && <div style={{color:'red'}}>错误: {error}</div>}
-        {!loading && !error && (
-          <>
-            <h4 style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <span>信号列表</span>
-              <button onClick={()=>setShowAddSignal(true)} style={{marginLeft:12}}>新增信号</button>
-            </h4>
-            <ul>
-              {signals.length === 0 && <li>暂无信号</li>}
-              {signals.map(sig => (
-                <li key={sig.id} style={{cursor:'pointer',color:'#1976d2',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <span onClick={() => setSignalDetail(sig)} style={{flex:1}}>
-                    [{sig.signal_date?.slice(0,10)}] {sig.signal_type} 权重: {sig.target_weight} 置信度: {sig.confidence_score}
-                  </span>
-                  <button style={{marginLeft:8}} onClick={e => {e.stopPropagation();setEditSignal(sig);}}>编辑</button>
-                </li>
-              ))}
-            </ul>
-            <h4 style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <span>回测结果</span>
-              <button onClick={()=>setShowAddBacktest(true)} style={{marginLeft:12}}>新增回测</button>
-            </h4>
-            <ul>
-              {backtests.length === 0 && <li>暂无回测</li>}
-              {backtests.map(bt => (
-                <li key={bt.id} style={{cursor:'pointer',color:'#1976d2'}} onClick={() => setBacktestDetail(bt)}>
-                  {bt.start_date?.slice(0,10)} ~ {bt.end_date?.slice(0,10)} 收益: {bt.total_return} 夏普: {bt.sharpe_ratio}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
+    <Modal onClose={onClose} width={600}>
+      <button className="modal-close" onClick={onClose}>×</button>
+      <h3>策略详情</h3>
+      <div><b>ID:</b> {strategy.id}</div>
+      <div><b>名称:</b> {strategy.name}</div>
+      <div><b>类型:</b> {strategy.strategy_type}</div>
+      <div><b>资产类别:</b> {strategy.asset_class}</div>
+      <div><b>风险等级:</b> {strategy.risk_level}</div>
+      <div><b>预期收益:</b> {strategy.expected_return}</div>
+      <div><b>最大回撤:</b> {strategy.max_drawdown}</div>
+      <div><b>参数:</b> <pre style={{whiteSpace:'pre-wrap'}}>{JSON.stringify(strategy.parameters, null, 2)}</pre></div>
+      {loading && <div>加载中...</div>}
+      {error && <div style={{color:'red'}}>错误: {error}</div>}
+      {!loading && !error && (
+        <>
+          <h4 style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span>信号列表</span>
+            <button onClick={()=>setShowAddSignal(true)} style={{marginLeft:12}}>新增信号</button>
+          </h4>
+          <ul>
+            {signals.length === 0 && <li>暂无信号</li>}
+            {signals.map(sig => (
+              <li key={sig.id} style={{cursor:'pointer',color:'#1976d2',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                <span onClick={() => setSignalDetail(sig)} style={{flex:1}}>
+                  [{sig.signal_date?.slice(0,10)}] {sig.signal_type} 权重: {sig.target_weight} 置信度: {sig.confidence_score}
+                </span>
+                <button style={{marginLeft:8}} onClick={e => {e.stopPropagation();setEditSignal(sig);}}>编辑</button>
+              </li>
+            ))}
+          </ul>
+          <h4 style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+            <span>回测结果</span>
+            <button onClick={()=>setShowAddBacktest(true)} style={{marginLeft:12}}>新增回测</button>
+          </h4>
+          <ul>
+            {backtests.length === 0 && <li>暂无回测</li>}
+            {backtests.map(bt => (
+              <li key={bt.id} style={{cursor:'pointer',color:'#1976d2'}} onClick={() => setBacktestDetail(bt)}>
+                {bt.start_date?.slice(0,10)} ~ {bt.end_date?.slice(0,10)} 收益: {bt.total_return} 夏普: {bt.sharpe_ratio}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       {signalDetail && <SignalDetailModal signal={signalDetail} onClose={() => setSignalDetail(null)} />}
       {editSignal && <SignalEditModal signal={editSignal} onClose={()=>setEditSignal(null)} onSuccess={()=>{
         // 重新加载信号列表
@@ -133,6 +132,6 @@ export default function StrategyDetailModal({ strategy, onClose }) {
         .modal { background:#000; padding:2rem; border-radius:8px; min-width:350px; max-width:90vw; max-height:90vh; overflow:auto; position:relative; }
         .modal-close { position:absolute; top:8px; right:12px; font-size:1.5rem; background:none; border:none; cursor:pointer; }
       `}</style>
-    </div>
+    </Modal>
   );
 } 
