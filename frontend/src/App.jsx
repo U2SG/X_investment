@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import HealthCheck from './HealthCheck';
 import LoginForm from './LoginForm';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
@@ -9,7 +8,7 @@ import PortfoliosPage from './pages/PortfoliosPage';
 import RiskAssessmentPage from './pages/RiskAssessmentPage';
 import StrategyPage from './pages/StrategyPage';
 import MarketDataPage from './pages/MarketDataPage';
-import FeatureStorePage from './pages/FeatureStorePage';
+import FeatureStorePage from './pages/FeatureStore';
 
 function App() {
   // 用户认证状态
