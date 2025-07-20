@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from . import Base
 if TYPE_CHECKING:
     from .portfolio import Portfolio
+    from .user_profile import UserProfile
 
 class User(Base):
     """用户模型类"""
@@ -26,6 +27,7 @@ class User(Base):
 
     # 关系
     portfolios: Mapped[list["Portfolio"]] = relationship("Portfolio", back_populates="user", cascade="all, delete-orphan")
+    profile: Mapped["UserProfile"] = relationship("UserProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         """字符串表示"""

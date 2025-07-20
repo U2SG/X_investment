@@ -18,6 +18,11 @@ from routers import assets  # 导入资产路由
 from routers import tags  # 导入标签路由
 from routers import market_data  # 导入市场数据路由
 from routers import strategy  # 导入策略引擎路由
+from routers import features  # 导入特征路由
+from routers import lineage  # 导入血缘关系路由
+from routers import user_profile  # 导入用户画像路由
+from routers import alternative_data  # 导入另类数据路由
+from routers import model_config  # 导入模型配置路由
 
 # 创建FastAPI应用实例
 app = FastAPI()
@@ -39,6 +44,11 @@ app.include_router(assets.router)
 app.include_router(tags.router)
 app.include_router(market_data.router)
 app.include_router(strategy.router)
+app.include_router(features.router)
+app.include_router(lineage.router)
+app.include_router(user_profile.router)
+app.include_router(alternative_data.router)
+app.include_router(model_config.router)
 
 @app.get("/")
 def read_root():

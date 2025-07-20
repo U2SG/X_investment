@@ -208,4 +208,99 @@ class MarketRegime(Base):
     # 时间信息
     start_date = Column(DateTime, comment="开始日期")
     end_date = Column(DateTime, comment="结束日期")
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="创建时间") 
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="创建时间")
+
+
+# === 宏观择时模型相关模型 ===
+class MacroTimingSignal(Base):
+    """宏观择时信号模型"""
+    __tablename__ = "macro_timing_signals"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    strategy_id = Column(Integer, ForeignKey("strategies.id"), nullable=True, comment="关联策略ID")
+    
+    # 输入参数
+    economic_cycle = Column(String(20), nullable=False, comment="经济周期阶段")
+    market_sentiment = Column(String(20), nullable=False, comment="市场情绪")
+    additional_factors = Column(JSON, comment="其他影响因子")
+    
+    # 输出结果
+    recommended_allocation = Column(JSON, nullable=False, comment="各类资产建议权重")
+    reasoning = Column(Text, comment="推荐理由")
+    
+    # 信号元数据
+    confidence_score = Column(Float, comment="置信度评分")
+    model_version = Column(String(20), comment="模型版本")
+    signal_date = Column(DateTime, nullable=False, comment="信号生成日期")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="创建时间")
+    
+    # 关联关系
+    strategy = relationship("Strategy", backref="macro_timing_signals")
+    
+    # 可选：关联到由此信号生成的策略信号
+    derived_signal_id = Column(Integer, ForeignKey("strategy_signals.id"), comment="派生的策略信号ID")
+    derived_signal = relationship("StrategySignal", foreign_keys=[derived_signal_id])
+
+
+# === 行业轮动模型相关模型 ===
+class SectorRotationSignal(Base):
+    """行业轮动信号模型"""
+    __tablename__ = "sector_rotation_signals"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    strategy_id = Column(Integer, ForeignKey("strategies.id"), nullable=True, comment="关联策略ID")
+    
+    # 输入参数
+    industry_scores = Column(JSON, nullable=False, comment="各行业景气度评分")
+    fund_flows = Column(JSON, comment="各行业资金流向")
+    additional_factors = Column(JSON, comment="其他影响因子")
+    
+    # 输出结果
+    recommended_industry_allocation = Column(JSON, nullable=False, comment="各行业建议权重")
+    reasoning = Column(Text, comment="推荐理由")
+    
+    # 信号元数据
+    confidence_score = Column(Float, comment="置信度评分")
+    model_version = Column(String(20), comment="模型版本")
+    signal_date = Column(DateTime, nullable=False, comment="信号生成日期")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="创建时间")
+    
+    # 关联关系
+    strategy = relationship("Strategy", backref="sector_rotation_signals")
+    
+    # 可选：关联到由此信号生成的策略信号
+    derived_signal_id = Column(Integer, ForeignKey("strategy_signals.id"), comment="派生的策略信号ID")
+    derived_signal = relationship("StrategySignal", foreign_keys=[derived_signal_id])
+
+
+# === 多因子模型PLUS相关模型 ===
+class MultiFactorScore(Base):
+    """多因子评分模型"""
+    __tablename__ = "multi_factor_scores"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    strategy_id = Column(Integer, ForeignKey("strategies.id"), nullable=True, comment="关联策略ID")
+    
+    # 输入参数
+    stocks_data = Column(JSON, nullable=False, comment="股票因子数据")
+    factor_weights = Column(JSON, comment="因子权重")
+    market_regime = Column(String(20), comment="市场状态")
+    auto_discover = Column(Boolean, default=False, comment="是否启用因子挖掘")
+    
+    # 输出结果
+    stock_scores = Column(JSON, nullable=False, comment="股票评分列表")
+    adjusted_weights = Column(JSON, nullable=False, comment="调整后的因子权重")
+    discovered_factors = Column(JSON, comment="新发现的因子及其权重")
+    reasoning = Column(Text, comment="模型推理过程")
+    
+    # 元数据
+    model_version = Column(String(20), comment="模型版本")
+    signal_date = Column(DateTime, nullable=False, comment="信号生成日期")
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), comment="创建时间")
+    
+    # 关联关系
+    strategy = relationship("Strategy", backref="multi_factor_scores")
+    
+    # 可选：关联到由此信号生成的策略信号
+    derived_signal_id = Column(Integer, ForeignKey("strategy_signals.id"), comment="派生的策略信号ID")
+    derived_signal = relationship("StrategySignal", foreign_keys=[derived_signal_id]) 

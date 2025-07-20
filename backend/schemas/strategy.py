@@ -370,4 +370,65 @@ class BacktestQuery(BaseModel):
     start_date: Optional[datetime] = Field(None, description="开始日期")
     end_date: Optional[datetime] = Field(None, description="结束日期")
     limit: int = Field(default=100, ge=1, le=1000, description="限制数量")
-    offset: int = Field(default=0, ge=0, description="偏移量") 
+    offset: int = Field(default=0, ge=0, description="偏移量")
+
+
+# === 宏观择时模型相关Schema ===
+class MacroTimingRequest(BaseModel):
+    """宏观择时模型请求Schema"""
+    economic_cycle: str = Field(..., description="经济周期阶段，如复苏、过热、滞胀、衰退")
+    market_sentiment: str = Field(..., description="市场情绪，如乐观、中性、悲观")
+    additional_factors: Optional[Dict[str, Any]] = Field(None, description="其他影响因子")
+    strategy_id: Optional[int] = Field(None, description="关联策略ID")
+
+class MacroTimingResponse(BaseModel):
+    """宏观择时模型响应Schema"""
+    recommended_allocation: Dict[str, float] = Field(..., description="各类资产建议权重，如{'STOCK':0.5,'BOND':0.3,'CASH':0.2}")
+    reasoning: Optional[str] = Field(None, description="推荐理由")
+    signal_date: datetime = Field(..., description="信号生成日期")
+
+# === 行业轮动模型相关Schema ===
+class SectorRotationRequest(BaseModel):
+    """行业轮动模型请求Schema"""
+    industry_scores: Dict[str, float] = Field(..., description="各行业景气度评分，如{'科技':0.8,'消费':0.6}")
+    fund_flows: Optional[Dict[str, float]] = Field(None, description="各行业资金流向，如{'科技':1.2,'消费':-0.5}")
+    additional_factors: Optional[Dict[str, Any]] = Field(None, description="其他影响因子")
+    strategy_id: Optional[int] = Field(None, description="关联策略ID")
+
+class SectorRotationResponse(BaseModel):
+    """行业轮动模型响应Schema"""
+    recommended_industry_allocation: Dict[str, float] = Field(..., description="各行业建议权重，如{'科技':0.4,'消费':0.3}")
+    reasoning: Optional[str] = Field(None, description="推荐理由")
+    signal_date: datetime = Field(..., description="信号生成日期")
+
+# === 多因子模型PLUS相关Schema ===
+class StockFactorData(BaseModel):
+    """股票因子数据Schema"""
+    symbol: str = Field(..., description="股票代码")
+    name: Optional[str] = Field(None, description="股票名称")
+    factor_values: Dict[str, float] = Field(..., description="各因子值，如{'价值':0.8,'成长':0.6}")
+
+class MultiFactorRequest(BaseModel):
+    """多因子模型请求Schema"""
+    stocks: List[StockFactorData] = Field(..., description="股票因子数据列表")
+    factor_weights: Optional[Dict[str, float]] = Field(None, description="各因子权重，如{'价值':0.4,'成长':0.3}")
+    market_regime: Optional[str] = Field(None, description="市场状态，用于动态调整因子权重")
+    auto_discover: Optional[bool] = Field(False, description="是否启用因子挖掘")
+    additional_params: Optional[Dict[str, Any]] = Field(None, description="其他参数")
+    strategy_id: Optional[int] = Field(None, description="关联策略ID")
+
+class StockScore(BaseModel):
+    """股票评分Schema"""
+    symbol: str = Field(..., description="股票代码")
+    name: Optional[str] = Field(None, description="股票名称")
+    total_score: float = Field(..., description="综合评分")
+    factor_contribution: Dict[str, float] = Field(..., description="各因子贡献")
+    rank: int = Field(..., description="排名")
+
+class MultiFactorResponse(BaseModel):
+    """多因子模型响应Schema"""
+    stock_scores: List[StockScore] = Field(..., description="股票评分列表")
+    adjusted_weights: Dict[str, float] = Field(..., description="调整后的因子权重")
+    discovered_factors: Optional[Dict[str, float]] = Field(None, description="新发现的因子及其权重")
+    reasoning: Optional[str] = Field(None, description="模型推理过程")
+    signal_date: datetime = Field(..., description="信号生成日期") 

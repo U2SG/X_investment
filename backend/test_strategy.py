@@ -543,6 +543,121 @@ class TestStrategyEngine:
         response = client.delete("/strategy/regimes/999", headers=self.headers)
         assert response.status_code == 404
 
+    def test_macro_timing_signal(self):
+        """测试宏观择时模型API的典型输入输出"""
+
+        # 1. 复苏+乐观
+        req1 = {"economic_cycle": "复苏", "market_sentiment": "乐观"}
+        resp1 = client.post("/strategy/macro_timing_signal", json=req1, headers=self.headers)
+        assert resp1.status_code == 200
+        data1 = resp1.json()
+        assert data1["recommended_allocation"]["STOCK"] > 0.5
+        assert "股票" in data1["reasoning"]
+
+        # 2. 衰退+悲观
+        req2 = {"economic_cycle": "衰退", "market_sentiment": "悲观"}
+        resp2 = client.post("/strategy/macro_timing_signal", json=req2, headers=self.headers)
+        assert resp2.status_code == 200
+        data2 = resp2.json()
+        assert data2["recommended_allocation"]["BOND"] >= 0.5
+        assert "防御" in data2["reasoning"]
+
+        # 3. 中性
+        req3 = {"economic_cycle": "过热", "market_sentiment": "中性"}
+        resp3 = client.post("/strategy/macro_timing_signal", json=req3, headers=self.headers)
+        assert resp3.status_code == 200
+        data3 = resp3.json()
+        assert abs(sum(data3["recommended_allocation"].values()) - 1.0) < 1e-6
+        assert "均衡" in data3["reasoning"]
+
+    def test_sector_rotation_signal(self):
+        """测试行业轮动模型API的典型输入输出"""
+
+        # 1. 典型输入：科技、消费、金融
+        req1 = {
+            "industry_scores": {"科技": 0.9, "消费": 0.8, "金融": 0.5}
+        }
+        resp1 = client.post("/strategy/sector_rotation_signal", json=req1, headers=self.headers)
+        assert resp1.status_code == 200
+        data1 = resp1.json()
+        # 前两高分行业应有较高权重
+        assert data1["recommended_industry_allocation"]["科技"] >= 0.3
+        assert data1["recommended_industry_allocation"]["消费"] >= 0.3
+        assert abs(sum(data1["recommended_industry_allocation"].values()) - 1.0) < 1e-6
+        assert "景气度最高的行业" in data1["reasoning"]
+
+        # 2. 只有一个行业
+        req2 = {"industry_scores": {"医药": 1.0}}
+        resp2 = client.post("/strategy/sector_rotation_signal", json=req2, headers=self.headers)
+        assert resp2.status_code == 200
+        data2 = resp2.json()
+        assert data2["recommended_industry_allocation"]["医药"] == 1.0
+
+        # 3. 空输入（应422）
+        req3 = {"industry_scores": {}}
+        resp3 = client.post("/strategy/sector_rotation_signal", json=req3, headers=self.headers)
+        assert resp3.status_code == 200 or resp3.status_code == 422
+
+    def test_multi_factor_signal(self):
+        """测试多因子模型API的典型输入输出"""
+        # 1. 基本测试：提供股票因子数据，获取评分
+        req1 = {
+            "stocks": [
+                {
+                    "symbol": "000001.SZ",
+                    "name": "平安银行",
+                    "factor_values": {"价值": 0.8, "成长": 0.6, "质量": 0.7, "动量": 0.5}
+                },
+                {
+                    "symbol": "600036.SH",
+                    "name": "招商银行",
+                    "factor_values": {"价值": 0.7, "成长": 0.8, "质量": 0.9, "动量": 0.6}
+                }
+            ],
+            "factor_weights": {"价值": 0.3, "成长": 0.3, "质量": 0.2, "动量": 0.2}
+        }
+        resp1 = client.post("/strategy/multi_factor_signal", json=req1, headers=self.headers)
+        assert resp1.status_code == 200
+        data1 = resp1.json()
+        # 验证返回字段
+        assert "stock_scores" in data1
+        assert "adjusted_weights" in data1
+        assert "signal_date" in data1
+        # 验证股票评分
+        assert len(data1["stock_scores"]) == 2
+        assert data1["stock_scores"][0]["symbol"] in ["000001.SZ", "600036.SH"]
+        assert "total_score" in data1["stock_scores"][0]
+        assert "factor_contribution" in data1["stock_scores"][0]
+        assert "rank" in data1["stock_scores"][0]
+        # 验证权重
+        assert abs(sum(data1["adjusted_weights"].values()) - 1.0) < 1e-6
+
+        # 2. 测试市场状态对权重的影响
+        req2 = {
+            "stocks": req1["stocks"],
+            "factor_weights": req1["factor_weights"],
+            "market_regime": "牛市"
+        }
+        resp2 = client.post("/strategy/multi_factor_signal", json=req2, headers=self.headers)
+        assert resp2.status_code == 200
+        data2 = resp2.json()
+        # 牛市应增加动量和成长因子权重
+        assert data2["adjusted_weights"]["动量"] > req1["factor_weights"]["动量"]
+        assert data2["adjusted_weights"]["成长"] > req1["factor_weights"]["成长"]
+
+        # 3. 测试因子挖掘
+        req3 = {
+            "stocks": req1["stocks"],
+            "auto_discover": True
+        }
+        resp3 = client.post("/strategy/multi_factor_signal", json=req3, headers=self.headers)
+        assert resp3.status_code == 200
+        data3 = resp3.json()
+        # 验证发现新因子
+        assert "discovered_factors" in data3
+        assert data3["discovered_factors"] is not None
+        assert len(data3["discovered_factors"]) > 0
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"]) 
